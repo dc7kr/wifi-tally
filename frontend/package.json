@@ -1,0 +1,60 @@
+{
+  "name": "vtally-frontend",
+  "version": "0.5.1",
+  "private": true,
+  "dependencies": {},
+  "scripts": {
+    "start": "cross-env PORT=3001 BROWSER=none react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "test:ci": "CI=true react-scripts test",
+    "cypress:open": "cypress open",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.60",
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.20.39",
+    "@types/react": "^16.14.21",
+    "@types/react-dom": "^16.9.14",
+    "@types/react-router": "^5.1.17",
+    "@types/react-router-dom": "^5.3.2",
+    "@types/socket.io-client": "^1.4.36",
+    "atem-connection": "^3.0.0-nightly-latest-20211125-222857-2b30eea.0",
+    "cross-env": "^7.0.3",
+    "cypress": "^6.9.1",
+    "eslint-plugin-cypress": "^2.12.1",
+    "jest-extended": "^0.11.5",
+    "lato-font": "^3.0.0",
+    "nosleep.js": "^0.12.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-full-screen": "^0.3.2-0",
+    "react-router-dom": "^5.3.0",
+    "react-scripts": "4.0.1",
+    "socket.io-client": "^2.4.0",
+    "typescript": "^4.5.4",
+    "web-vitals": "^0.2.4"
+  },
+  "engines": {
+    "node": ">=12",
+    "npm": ">=6.9"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

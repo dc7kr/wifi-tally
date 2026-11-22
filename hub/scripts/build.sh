@@ -1,7 +1,8 @@
 #!/bin/bash -eux
 
 RELEASE_DIR="./dist"
-REACT_DIR="./build"
+FRONTEND_DIR="../frontend"
+REACT_DIR="$FRONTEND_DIR/build"
 BUILD_NAME=${BUILD_NAME:=$(git describe --tags --always)}
 BUILD_NAME=${BUILD_NAME/#v/} # remove the leading "v" in the version
 
@@ -38,7 +39,7 @@ fi
 #
 # ###
 
-rm -rf "$RELEASE_DIR" "$REACT_DIR"
+rm -rf "$RELEASE_DIR"
 mkdir "$RELEASE_DIR"
 
 # ###
@@ -59,8 +60,8 @@ npm run build:backend -- --outDir "$RELEASE_DIR/src"
 
 # "CI=false": We don't want to have the build fail on warnings
 # @see https://github.com/facebook/create-react-app/issues/3657#issuecomment-354797029
-CI=false npm run build:frontend
-# react-scripts has the "build" directory hard-coded. So we need to move it
+# (the dependencies of the frontend have to be installed: `npm ci` in ../frontend)
+(cd "$FRONTEND_DIR" && rm -rf build && CI=false npm run build)
 cp -r "$REACT_DIR" "$RELEASE_DIR/src/frontend"
 
 # ###

@@ -10,12 +10,9 @@ and configuration.
 
 ### Overview
 
-The code consists of two parts
-
-* The **backend**, a nodeJS application
-* The **frontend**, built with ReactJS
-
-Both share some of the code and live in the same directory structure.
+This is the **deprecated** Node.js implementation of the hub; it is replaced by the Rust
+implementation in [`../hub-rs`](../hub-rs). The web interface (ReactJS) lives in
+[`../frontend`](../frontend) and is only served by this backend.
 
 ### Run the development setup
 
@@ -24,10 +21,10 @@ proxies requests to the _frontend_.
 
     npm install --also=dev
 
-    # in one terminal
-    npm run start:frontend
+    # in one terminal (in ../frontend, after `npm install` there)
+    npm start
 
-    # in another terminal
+    # in another terminal (in this directory)
     npm run start:backend
 
 Point your browser to http://localhost:3000

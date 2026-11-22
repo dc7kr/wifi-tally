@@ -11,8 +11,6 @@ import { LogObjectType } from "../domain/Log";
 import { TestConfigurationSaveType } from "../mixer/test/TestConfiguration";
 import { StateCommand } from "../tally/CommandCreator";
 import { TallyConfigurationObjectType } from "../tally/TallyConfiguration";
-import { TallyDeviceObjectType } from "../flasher/TallyDevice";
-import { TallyProgramProgressType, TallySettingsIniProgressType } from "../flasher/NodeMcuConnector";
 
 // events the server sends to the client
 export interface ServerSentEvents {
@@ -35,9 +33,6 @@ export interface ServerSentEvents {
     'config.state.tallyconfig': (defaultTallyConfiguration: TallyConfigurationObjectType) => void
     'config.state.mixer': (data: {mixerName: string, allowedMixers: string[]}) => void
 
-    'flasher.device': (tallyDevice: TallyDeviceObjectType) => void
-    'flasher.settingsIni.progress': (state: TallySettingsIniProgressType) => void
-    'flasher.program.progress': (state: TallyProgramProgressType) => void
 }
 
 // events the client sends to the server
@@ -73,9 +68,6 @@ export interface ClientSentEvents {
     'config.change.vmix': (vmixConfiguration: VmixConfigurationSaveType, newMixer?: "vmix") => void
     'config.change.tallyconfig': (configuration: TallyConfigurationObjectType) => void
 
-    'flasher.device.get': () => void
-    'flasher.settingsIni': (path: string, settingsIniString: string) => void
-    'flasher.program': (path: string) => void
 }
 
 export interface ServerSideSocket {

@@ -58,10 +58,12 @@ jobs:
         id: hub
         run: |
           npm install ${{ github.event.inputs.source }}
+        working-directory: ./frontend
       - # this step also runs "npm ci" and takes care of caching
         name: Cypress run
         uses: cypress-io/github-action@v2
         with:
+          working-directory: ./frontend
           start: "./node_modules/.bin/vtally --with-test"
           wait-on: 'http://localhost:3000'
           record: true

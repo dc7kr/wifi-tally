@@ -24,7 +24,6 @@ import TestConnector from './mixer/test/TestConnector'
 import TestConfiguration from './mixer/test/TestConfiguration'
 import WebTallyDriver from './tally/WebTallyDriver'
 import { DefaultTallyConfiguration, TallyConfiguration } from './tally/TallyConfiguration'
-import NodeMcuConnector from './flasher/NodeMcuConnector'
 
 const argv = yargs.argv
 if (argv.env !== undefined) {
@@ -57,7 +56,6 @@ const myWebTallyDriver = new WebTallyDriver(myConfiguration, myTallyContainer)
 
 const myMixerDriver = new MixerDriver(myConfiguration, myEmitter)
 
-const myNodeMcuConnector = new NodeMcuConnector()
 
 // log stuff
 myEmitter.on('tally.logged', ({tally, log}) => {
@@ -307,24 +305,6 @@ io.on('connection', (socket: ServerSideSocket) => {
     configuration.fromJson(conf)
     myConfiguration.setTallyConfiguration(configuration)
   })
-
-  socket.on('flasher.device.get', () => {
-    myNodeMcuConnector.getDevice().then(device => {
-      socket.emit('flasher.device', device.toJson())
-    })
-  })
-
-  socket.on('flasher.settingsIni', (path, settingsIniString) => {
-    myNodeMcuConnector.writeTallySettingsIni(path, settingsIniString, (state) => {
-      socket.emit('flasher.settingsIni.progress', state)
-    })
-  })
-
-  socket.on('flasher.program', (path) => {
-    myNodeMcuConnector.program(path, (state) => {
-      socket.emit('flasher.program.progress', state)
-    })
-  })
 })
 
 if (myConfiguration.isDev()) {
@@ -341,7 +321,7 @@ if (myConfiguration.isDev()) {
           'Content-Type': 'text/plain',
         });
         if (err && err.code === "ECONNREFUSED") {
-          res.end(`Could not connect to server on http://localhost:${proxyPort}. Is the react dev server running?\nTo fix it run:\n    npm run start:frontend`)
+          res.end(`Could not connect to server on http://localhost:${proxyPort}. Is the react dev server running?\nTo fix it run:\n    cd ../frontend && npm start`)
         } else {
           res.end("The proxy reported an error: \n" + err.toString())
         }
