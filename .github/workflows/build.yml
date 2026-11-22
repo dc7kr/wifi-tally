@@ -273,6 +273,9 @@ jobs:
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('hub-rs/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-test-
+      - name: Install the ALSA headers (MIDI)
+        run: sudo apt-get -y update && sudo apt-get install -y libasound2-dev
+        working-directory: .
       - run: cargo test --locked
       - run: cargo clippy --locked --all-targets -- -D warnings
 
@@ -321,6 +324,9 @@ jobs:
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('hub-rs/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-release-
+      - name: Install the ALSA headers (MIDI)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get -y update && sudo apt-get install -y libasound2-dev
       - name: Package
         run: ./package.sh --version "${{ needs.setup.outputs.build_name }}"
         working-directory: ./hub-rs

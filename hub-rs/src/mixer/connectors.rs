@@ -5,13 +5,15 @@
 use super::atem::AtemConnector;
 use super::config::{self, MixerSettings, MockConfig, TestConfig};
 use super::obs::ObsConnector;
+use super::roland_v60hd::RolandV60HDConnector;
+use super::roland_v8hd::RolandV8HDConnector;
 use super::vmix::VmixConnector;
 use crate::hub::Hub;
 use rand::Rng;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::task::JoinHandle;
-use tracing::{error, info};
+use tracing::info;
 
 /// Stops a task when it is dropped.
 pub struct TaskGuard(JoinHandle<()>);
@@ -51,12 +53,8 @@ pub fn create(id: &str, hub: Arc<Hub>, settings: &MixerSettings) -> Option<Box<d
         config::ATEM => Box::new(AtemConnector::new(hub, settings.atem.clone())),
         config::VMIX => Box::new(VmixConnector::new(hub, settings.vmix.clone())),
         config::OBS => Box::new(ObsConnector::new(hub, settings.obs.clone())),
-        config::ROLAND_V8HD | config::ROLAND_V60HD => {
-            Box::new(UnsupportedConnector {
-                hub,
-                id: id.to_string(),
-            })
-        }
+        config::ROLAND_V60HD => Box::new(RolandV60HDConnector::new(hub, settings.roland_v60hd.clone())),
+        config::ROLAND_V8HD => Box::new(RolandV8HDConnector::new(hub, settings.roland_v8hd.clone())),
         _ => return None,
     })
 }
@@ -69,27 +67,6 @@ struct NullConnector {
 impl Connector for NullConnector {
     fn connect(&mut self) {
         info!("No video mixer connected.");
-        self.hub.notify_program_preview_changed(None, None);
-    }
-    fn disconnect(&mut self) {}
-    fn is_connected(&self) -> bool {
-        false
-    }
-}
-
-/// Stands in for mixers that the Rust hub can not talk to yet. The hub keeps
-/// running, but tallies show the "unknown" state.
-struct UnsupportedConnector {
-    hub: Arc<Hub>,
-    id: String,
-}
-
-impl Connector for UnsupportedConnector {
-    fn connect(&mut self) {
-        error!(
-            "The \"{}\" mixer is not supported by the Rust hub yet. Tallies will show an unknown state.",
-            self.id
-        );
         self.hub.notify_program_preview_changed(None, None);
     }
     fn disconnect(&mut self) {}

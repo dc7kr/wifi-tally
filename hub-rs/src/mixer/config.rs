@@ -1,6 +1,6 @@
 //! Settings of every supported video mixer.
 //!
-//! They live here even for mixers whose connector is not ported yet: the
+//! They live here even for mixers that are not currently selected: the
 //! browser needs `config.state.<mixer>` for its settings pages and the
 //! configuration file must keep them intact.
 

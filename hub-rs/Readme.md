@@ -20,7 +20,8 @@ The result is a single ~7 MB executable without a Node.js runtime.
 | **vMix** connector (TCP API) | done |
 | **ATEM** connector (own implementation of the UDP protocol, see below) | done – **verified against the reference library and a simulated ATEM, not yet against real hardware** |
 | **OBS** connector (obs-websocket v4) | done – tested against a simulated OBS, not yet against a real one; no password support (as before) |
-| **Roland V-8HD / V-60HD connectors** | **not ported yet** – selecting one logs an error and tallies show the "unknown" state. Their settings are still stored and edited as usual. |
+| **Roland V-60HD** connector (Smart Tally over HTTP) | done – tested against a simulated V-60HD, not yet against a real one |
+| **Roland V-8HD** connector (MIDI via `midir`) | done – message handling is tested, the MIDI transport **not yet against a real V-8HD**. Needs ALSA (`libasound2-dev`) to build on Linux. |
 | Tally flasher (NodeMCU programming from the hub) | removed from the hub – flash the firmware with PlatformIO |
 | Development proxy to the React dev server | not ported – use `--frontend-dir` with a built frontend |
 
@@ -43,7 +44,7 @@ the hub looks for a `frontend` directory next to the executable.
 
     ./package.sh                  # npm ci --ignore-scripts (Node 16+) + frontend build, release build, then dist/vtally-hub-<version>-<target>.tar.gz
     ./package.sh --skip-frontend  # reuse an existing ../frontend/build
-    ./package.sh --target x86_64-unknown-linux-musl --version 1.2.3   # cross compile (rustup target add first)
+    ./package.sh --target x86_64-apple-darwin --version 1.2.3   # cross compile (rustup target add first)
 
 The archive holds the executable and a `frontend/` directory next to it, which the hub finds without
 any option. Windows targets produce a `.zip`.
@@ -85,6 +86,8 @@ Log verbosity can be tuned with `RUST_LOG`, e.g. `RUST_LOG=vtally_hub=debug`.
   input names with `XML` every 5 seconds.
 * `mixer/obs.rs`: `ObsState` is the pure logic (scenes embedded into live scenes, live mode); the connector
   speaks the obs-websocket v4 JSON protocol and asks for the scene list again whenever scenes change.
+* `mixer/roland_v60hd.rs`: polls `/tally/<n>/status` of the eight inputs; `mixer/roland_v8hd.rs`: asks the
+  V-8HD for the tally of its eight inputs with SysEx messages (`InputStatus` parses the answers).
 * `mixer/atem/`: `packet.rs` is the UDP framing, `state.rs` the commands that matter for tallies
   plus the port of `listVisibleInputs` (keyers, transitions, super source, nested mix effects),
   `mod.rs` the session (hello, acknowledgements) and the reconnect logic. The hub only listens and
@@ -105,3 +108,8 @@ Log verbosity can be tuned with `RUST_LOG`, e.g. `RUST_LOG=vtally_hub=debug`.
   transferred. "Could not connect" and "Lost connection" are logged once per outage.
 * OBS: the streaming and recording state is also queried right after connecting (`GetStreamingStatus`), so the
   live mode is right when OBS was already streaming. The TypeScript hub only learned it from later events.
+* Roland V-60HD: the eight inputs are polled together, once per request interval, and published when all of
+  them answered. If one fails the mixer counts as disconnected until all answer again (the TypeScript hub
+  polled every input on its own timer).
+* Roland V-8HD: when the MIDI ports are not found (or the device is unplugged) the hub tries again every
+  two seconds. The TypeScript hub gave up after the first attempt.

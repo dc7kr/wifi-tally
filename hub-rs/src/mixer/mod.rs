@@ -3,6 +3,8 @@ pub mod config;
 pub mod connectors;
 pub mod driver;
 pub mod obs;
+pub mod roland_v60hd;
+pub mod roland_v8hd;
 pub mod vmix;
 
 use config::*;
