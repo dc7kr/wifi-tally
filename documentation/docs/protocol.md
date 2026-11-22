@@ -5,7 +5,7 @@ to build your own Tally (on other hardware or in another language) or write a cu
 
 The reference implementations are the [Tally firmware](https://github.com/wifi-tally/wifi-tally/tree/master/tally)
 (`lib/tally_core/Protocol.cpp`, `src/TallyLink.cpp`) and the Hub
-(`hub/src/tally/CommandParser.ts`, `hub/src/tally/CommandCreator.ts`).
+(`hub-rs/src/command.rs`).
 
 ## Transport
 

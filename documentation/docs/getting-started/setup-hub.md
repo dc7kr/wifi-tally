@@ -14,15 +14,14 @@ connection.
 
 ## Setup
 
-The hub requires [node.js](https://nodejs.org/en/) to run. Packages for Linux, MacOS and even Windows
-are offered on the [Download page](https://nodejs.org/en/download/). We support the latest LTS version,
-which should be `{{ hub_nodejs_version }}` at the moment.
-
-Open the terminal of your operating system, enter the `hub` directory and run
+The hub is a single program that does not need anything else to be installed.
+[Download it](../download.md) for your operating system, extract the archive and start it:
 
 ````bash
-npm run start
+./vtally-hub
 ````
+
+On Windows double-click `vtally-hub.exe`.
 
 Point your browser to the IP of your computer on port {{ hub_default_port }}, for instance http://127.0.0.1:{{ hub_default_port }} if
 you are on the same machine. You should see a screen similar to this

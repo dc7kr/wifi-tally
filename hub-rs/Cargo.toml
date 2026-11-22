@@ -4,6 +4,7 @@ version = "0.5.1"
 edition = "2021"
 description = "vTally Hub: connects video mixers and tally lights (Rust rewrite)"
 license = "MIT"
+authors = ["Karsten Richter <kr@corika.com>"]
 
 [dependencies]
 anyhow = "1"

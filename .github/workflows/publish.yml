@@ -1,4 +1,4 @@
-# publishes a release to nmpjs.com
+# publishes a release to Github
 
 name: publish
 on:
@@ -9,42 +9,12 @@ on:
         required: true
         default: ''
 env:
-  NODEJS_VERSION: 12
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   AWS_S3_NIGHTLY_BASEURI: https://wifi-tally-nightly.s3.eu-central-1.amazonaws.com
   AWS_S3_NIGHTLY_BUCKET: wifi-tally-nightly
   AWS_S3_NIGHTLY_REGION: eu-central-1
 
 jobs:
-  publish-npm:
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: Use node.js ${{ env.NODEJS_VERSION }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ env.NODEJS_VERSION }}
-      - name: Check if already uploaded
-        id: preflight
-        run: |
-          if curl -L -f "https://npmjs.com/package/vtally/v/${{ github.event.inputs.version }}" -o /dev/null; then
-            # package already uploaded
-            echo "::set-output name=check::err"
-          else
-            # package not yet uploaded
-            echo "::set-output name=check::ok"
-          fi
-
-      - name: Upload to npm
-        if: "${{ steps.preflight.outputs.check == 'ok' }}"
-        run: |
-          npm set //registry.npmjs.org/:_authToken=${{ env.NPM_AUTH_TOKEN }}
-
-          SOURCE="${AWS_S3_NIGHTLY_BASEURI}/vtally-${{ github.event.inputs.version }}/vtally-${{ github.event.inputs.version }}.tgz"
-
-          echo "releasing $SOURCE to npm"
-          npm publish "${SOURCE}"
-
   # ###
   #
   # Create a Github Release and upload artifacts

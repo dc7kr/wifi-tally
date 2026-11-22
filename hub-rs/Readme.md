@@ -1,11 +1,12 @@
 # vTally Hub (Rust)
 
-A rewrite of the [vTally hub](../hub) in Rust. It is a drop-in replacement for the
-Node.js backend: it serves the existing React frontend, speaks the same socket.io
-protocol, talks the same UDP protocol to the tallies and reads and writes the same
-configuration file (`~/.wifi-tally.json`).
+The vTally hub. It connects to the video mixer, tells the tallies what to show and serves the web
+interface ([`../frontend`](../frontend)) that is used to monitor and configure it. It reads and writes
+the configuration file `~/.wifi-tally.json` of older versions.
 
-The result is a single ~7 MB executable without a Node.js runtime.
+The result is a single ~7 MB executable. Neither Node.js nor any other runtime is needed to run it
+(Node.js is only needed to build the frontend). It replaces the former Node.js hub, which was removed
+from this repository after the last connector had been ported (see the [Changelog](../Changelog.md)).
 
 ## Status
 
@@ -53,10 +54,10 @@ Log verbosity can be tuned with `RUST_LOG`, e.g. `RUST_LOG=vtally_hub=debug`.
 
 ## Tests
 
-    cargo test        # unit tests, ported from the Jest specs of the TypeScript hub
+    cargo test        # unit tests, many ported from the Jest specs of the former TypeScript hub
     cargo clippy --all-targets
 
-    # the ATEM tally logic is compared with the `atem-connection` library of the Node hub on random
+    # the ATEM tally logic is compared with the `atem-connection` library that the former Node hub used on random
     # command sequences (tests/atem_reference.rs). To regenerate tests/fixtures/atem-visible-inputs.json:
     #   npm install atem-connection@3.4.0   (in a scratch directory)
     #   NODE_PATH=<scratch>/node_modules node tests/atem-fixtures.js > tests/fixtures/atem-visible-inputs.json
@@ -93,7 +94,7 @@ Log verbosity can be tuned with `RUST_LOG`, e.g. `RUST_LOG=vtally_hub=debug`.
   `mod.rs` the session (hello, acknowledgements) and the reconnect logic. The hub only listens and
   never sends commands. There is no Rust ATEM library, so this replaces `atem-connection`.
 
-## Differences to the TypeScript hub
+## Differences to the former TypeScript hub
 
 * Roland V-8HD/V-60HD settings changes are now pushed to other open browsers (the TypeScript hub forgot to).
 * Configuration is only written when something persisted really changed (the TypeScript hub compared object

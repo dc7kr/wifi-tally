@@ -15,82 +15,49 @@
 
 The latest version of vTally is [{{ latest_version }}]({{ github_link }}/releases/tag/{{ latest_version }}).
 
+The hub is a single program. You do not need to install anything else to run it.
+Download the archive for your computer from the [release page]({{ github_link }}/releases/tag/{{ latest_version }}),
+extract it, and start `vtally-hub` (`vtally-hub.exe` on Windows) from the extracted directory. Then point your
+browser to <http://localhost:3000> to see the hub.
+
+| Computer | Archive |
+| --- | --- |
+| Windows (x86_64) | `vtally-hub-{{ latest_version }}-x86_64-pc-windows-msvc.zip` |
+| Windows (ARM) | `vtally-hub-{{ latest_version }}-aarch64-pc-windows-msvc.zip` |
+| macOS (Apple silicon) | `vtally-hub-{{ latest_version }}-aarch64-apple-darwin.tar.gz` |
+| macOS (Intel) | `vtally-hub-{{ latest_version }}-x86_64-apple-darwin.tar.gz` |
+| Linux (x86_64) | `vtally-hub-{{ latest_version }}-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux (ARM64, e.g. Raspberry Pi) | `vtally-hub-{{ latest_version }}-aarch64-unknown-linux-gnu.tar.gz` |
+
 ## Windows
 
-Download [vtally-{{ latest_version }}-win-x64-portable.exe]({{ github_link }}/releases/download/{{ latest_version }}/vtally-{{ latest_version }}-win-x64-portable.exe).
+Extract the zip file and double-click `vtally-hub.exe`. Windows Defender might complain that it can not
+verify the source. Just be stubborn. A terminal window opens; the hub runs as long as it is open.
 
-Windows Defender might complain multiple times, that it can not verify the source. Just be stubborn.
+To start the hub automatically, hit `WIN` + `R` on your keyboard, type `shell:Startup` and put a shortcut
+to `vtally-hub.exe` in this directory.
 
-It does not require installation. Just double-click, and a tray icon should pop up. Right click and select
-"Open in Browser", and you see the hub.
-
-To exit vTally, right click the tray icon, click "Exit" and confirm.
-
-### Autostart
-
-Hit `WIN` + `R` on your keyboard and type `shell:Startup`. Move the exe file, you downloaded, into this directory.
-
-When you restart your PC and log in again, vTally should automatically start.
-
-## MacOS (x86_64)
-
-Download [vtally-{{ latest_version }}-mac-x64.dmg]({{ github_link }}/releases/download/{{ latest_version }}/vtally-{{ latest_version }}-mac-x64.dmg).
-
-To start the app, right click and select `open`.
-
-A tray icon should pop up. Right click and select "Open in Browser", and you see the hub.
-
-To exit vTally, right click the tray icon, click "Exit" and confirm.
-
-## Linux (x86_64), Ubuntu, Debian, Fedora, etc.
-
-Download [vtally-{{ latest_version }}-linux-x86_64.AppImage]({{ github_link }}/releases/download/{{ latest_version }}/vtally-{{ latest_version }}-linux-x86_64.AppImage),
-open a terminal and make it executable:
+## macOS
 
 ````bash
-chmod a+x vtally-{{ latest_version }}-linux-x86_64.AppImage
+tar -xzf vtally-hub-{{ latest_version }}-aarch64-apple-darwin.tar.gz
+cd vtally-hub-{{ latest_version }}-aarch64-apple-darwin
+./vtally-hub
 ````
 
-To start, run
+macOS might refuse to open a program of an unknown developer. Open the "Privacy & Security" settings and allow it.
+
+## Linux
+
 ````bash
-./vtally-{{ latest_version }}-linux-x86_64.AppImage
+tar -xzf vtally-hub-{{ latest_version }}-x86_64-unknown-linux-gnu.tar.gz
+cd vtally-hub-{{ latest_version }}-x86_64-unknown-linux-gnu
+./vtally-hub
 ````
-
-Point your browser to <http://localhost:3000> to show the Hub.
 
 Quit by tapping `CTRL` + `c` on your keyboard in the terminal window.
 
+## Options
 
-## Run from npm
-
-### 1. Install Node.js ≥{{ hub_nodejs_version }}
-
-[Install Node.js](https://nodejs.org/en/download/package-manager/).
-
-Verify your installation. NodeJS should at least be at version {{ hub_nodejs_version }}. If this is not the
-case, [check their website](https://nodejs.org/en/download/) for alternative ways of installation.
-
-    $ node -v
-    v14.15.4
-    
-    $ npm -v
-    6.14.10
-
-### 2. Install vTally
-
-This command will install vTally for the logged-in user and does not require `sudo` rights. Run
-
-````bash
-npm config set prefix '~/.local/'
-echo 'export PATH=~/.local/bin/:$PATH' >> ~/.bashrc
-source ~/.bashrc
-npm install -g vtally:{{ latest_version }}
-````
-
-### 3. Run vTally
-
-vTally is installed. Run it by calling
-
-    vtally
-
-This version does not come with the tray icon. Point your browser to <http://localhost:3000> to see the hub.
+Run `vtally-hub --help` to see all options, for instance `--port` to change the port of the web interface
+(default {{ hub_default_port }}) or `--tally-port` for the port the Tallies talk to (default {{ tally_default_port }}).

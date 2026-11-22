@@ -163,7 +163,7 @@ mod tests {
     /// Files written by older versions of the TypeScript hub must keep loading.
     #[test]
     fn loads_the_fixtures_of_older_versions() {
-        let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../hub/fixtures");
+        let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures");
         for file in [
             "settings-v0.2.1.json",
             "settings-v0.3.0.json",
@@ -181,7 +181,7 @@ mod tests {
     fn fixture_v0_4_0_is_understood_in_detail() {
         let raw = std::fs::read_to_string(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../hub/fixtures/settings-v0.4.0.json"
+            "/tests/fixtures/settings-v0.4.0.json"
         ))
         .unwrap();
         let mut c = AppConfig::default();

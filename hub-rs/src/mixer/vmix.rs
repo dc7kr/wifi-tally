@@ -493,7 +493,12 @@ mod tests {
             Endpoint { ip: "127.0.0.1".into(), port },
         );
         vmix.connect();
-        sleep(Duration::from_secs(15)).await;
+        // The clock is paused, but the sockets are real: give them real time to make progress between
+        // the virtual seconds, otherwise the clock runs ahead of the accepts.
+        for _ in 0..15 {
+            std::thread::sleep(Duration::from_millis(20));
+            sleep(Duration::from_secs(1)).await;
+        }
         assert!(!hub.is_mixer_connected());
         assert!(
             accepted.load(Ordering::SeqCst) >= 2,

@@ -1,6 +1,7 @@
 # Upcoming
 
 * [BREAKING] The Tally firmware is now a PlatformIO project based on the Arduino framework instead of NodeMCU Lua. It supports ESP8266 and ESP32. Flash it with `pio run -t upload` and `pio run -t uploadfs`; see the [Getting Started Guide](https://wifi-tally.github.io/getting-started/setup-wifi-tally.html). The protocol with the Hub did not change.
+* [BREAKING] The hub is rewritten in Rust (`hub-rs`). It is one executable without any runtime: Node.js is no longer needed to run vTally. The Node.js hub and the `vtally` npm package are removed; download the archive for your operating system instead (see the [Download page](https://wifi-tally.github.io/download.html)). Configuration file, web interface and the protocol with the Tallies did not change.
 * [BREAKING] The "Flash" page of the hub (and its `nodemcu-tool` dependency) is removed, as it could only program the NodeMCU Lua firmware. Use PlatformIO to flash the Tally.
 * [FEATURE] The protocol between Tally and Hub is documented.
 * [BUGFIX] Don't suggest vMix is connected until a hello message is received and tally subscription was acknowledged #85

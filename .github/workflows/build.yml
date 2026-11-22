@@ -6,7 +6,6 @@ on:
     tags:
       - v[0-9]+.[0-9]+.[0-9]+*
 env:
-  NODEJS_VERSION: 12
   # Node.js used to build and test the frontend (react-scripts 5 needs at least 14; 16 has builds for arm64 Macs and Windows)
   FRONTEND_NODEJS_VERSION: 16
   PYTHON_VERSION: "3.11"
@@ -74,40 +73,6 @@ jobs:
           echo "tag=${{ steps.calc.outputs.tag }}"
 
   # ###
-  # 
-  # run Unit Tests for Hub
-  # 
-  # ###
-  hub-test:
-    needs: setup
-    env:
-      BUILD_NAME: ${{ needs.setup.outputs.build_name }}
-    defaults:
-      run:
-        working-directory: ./hub
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the source code
-        uses: actions/checkout@v2
-      - run: sudo apt-get -y update
-      - run: sudo apt-get install -y libasound2-dev
-      - name: Use node.js ${{ env.NODEJS_VERSION }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ env.NODEJS_VERSION }}
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-            ${{ runner.OS }}-
-      - run: npm ci
-      - run: npm run test:ci
-
-  # ###
   #
   # Run the unit tests of the web frontend and make sure it builds
   #
@@ -138,7 +103,7 @@ jobs:
 
   # ###
   #
-  # Cypress tests are integration tests that the hub
+  # Cypress tests are integration tests of the hub with its web frontend
   #
   # ###
   # @see https://github.com/cypress-io/github-action
@@ -148,23 +113,32 @@ jobs:
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v2
-        with:
-          path: .
       - run: sudo apt-get -y update
       - run: sudo apt-get install -y libasound2-dev
       - name: Use node.js ${{ env.FRONTEND_NODEJS_VERSION }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ env.FRONTEND_NODEJS_VERSION }}
-      - name: Install the dependencies of the (Node.js) hub
-        run: npm ci
-        working-directory: ./hub
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            hub-rs/target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('hub-rs/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-release-
+      - name: Build the hub
+        run: cargo build --release --locked
+        working-directory: ./hub-rs
       - # this step also runs "npm ci" in the frontend and takes care of caching
         name: Cypress run
         uses: cypress-io/github-action@v2
         with:
-          start: npm --prefix ../hub run cypress:backend, npm start
-          wait-on: 'http://localhost:3000, http://localhost:3001'
+          build: npm run build
+          start: ../hub-rs/target/release/vtally-hub --with-test --frontend-dir build
+          wait-on: 'http://localhost:3000'
           working-directory: ./frontend
           record: true
           spec: "cypress/**/!(manual_)*.spec.ts"
@@ -310,7 +284,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Use node.js ${{ env.NODEJS_VERSION }}
+      - name: Use node.js ${{ env.FRONTEND_NODEJS_VERSION }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ env.FRONTEND_NODEJS_VERSION }}
@@ -328,7 +302,9 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: sudo apt-get -y update && sudo apt-get install -y libasound2-dev
       - name: Package
-        run: ./package.sh --version "${{ needs.setup.outputs.build_name }}"
+        run: |
+          BUILD_NAME="${{ needs.setup.outputs.build_name }}"
+          ./package.sh --version "${BUILD_NAME#v}"
         working-directory: ./hub-rs
       - name: Archive
         uses: actions/upload-artifact@v2
@@ -484,79 +460,25 @@ jobs:
 
   # ###
   #
-  # Bundle it all together
+  # Upload the hub for every platform
   #
   # ###
-  bundle-and-upload:
+  hub-upload:
     needs:
-      - documentation
-      - tally-build
+      - hub-rs-package
       - setup
     runs-on: ubuntu-latest
-    outputs:
-      artifact: ${{ steps.aws.outputs.artifact }}
-      artifact_name: ${{ steps.aws.outputs.artifact_name }}
+    strategy:
+      matrix:
+        name: [linux-x86_64, linux-arm64, macos-x86_64, macos-arm64, windows-x86_64, windows-arm64]
     env:
       BUILD_NAME: ${{ needs.setup.outputs.build_name }}
     steps:
-      - name: Checkout the source code
-        uses: actions/checkout@v2
-      - run: sudo apt-get -y update
-      - run: sudo apt-get install -y libasound2-dev
-      - name: Use node.js ${{ env.FRONTEND_NODEJS_VERSION }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ env.FRONTEND_NODEJS_VERSION }}
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-            ${{ runner.OS }}-
-      - run: npm ci
-        working-directory: ${{ github.workspace }}/hub
-      - run: npm ci
-        working-directory: ${{ github.workspace }}/frontend
-      - run: |
-          mkdir ${GITHUB_WORKSPACE}/hub/dist
-          mkdir ${GITHUB_WORKSPACE}/hub/dist/docs
-          mkdir ${GITHUB_WORKSPACE}/hub/dist/esp8266
-          mkdir ${GITHUB_WORKSPACE}/hub/dist/esp32
-      - run: ./scripts/build.sh
-        working-directory: ${{ github.workspace }}/hub
-      - name: Get HTML documentation
+      - name: Get the hub
         uses: actions/download-artifact@v2
         with:
-          name: documentation-html
-          path: ${{ github.workspace }}/hub/dist/docs/html
-      - name: Get Markdown documentation
-        uses: actions/download-artifact@v2
-        with:
-          name: documentation-markdown
-          path: ${{ github.workspace }}/hub/dist/docs/markdown
-      - name: Get Tally (ESP8266)
-        uses: actions/download-artifact@v2
-        with:
-          name: tally-esp8266
-          path: ${{ github.workspace }}/hub/dist/esp8266
-      - name: Get Tally (ESP32)
-        uses: actions/download-artifact@v2
-        with:
-          name: tally-esp32
-          path: ${{ github.workspace }}/hub/dist/esp32
-      - name: Copy static files
-        run: |
-          cp "${GITHUB_WORKSPACE}/Readme.md" "${GITHUB_WORKSPACE}/hub/dist"
-          cp "${GITHUB_WORKSPACE}/LICENSE" "${GITHUB_WORKSPACE}/hub/dist"
-          cp "${GITHUB_WORKSPACE}/Changelog.md" "${GITHUB_WORKSPACE}/hub/dist"
-      - name: npm pack
-        run: |
-          npm shrinkwrap
-          npm pack
-        working-directory: ${{ github.workspace }}/hub/dist
+          name: hub-rs-${{ matrix.name }}
+          path: ${{ github.workspace }}/hub
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -564,14 +486,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_S3_NIGHTLY_KEY }}
           aws-region: ${{ env.AWS_S3_NIGHTLY_REGION }}
       - name: Push artifact to AWS S3
-        id: aws
         run: |
           # strip the "v" in front of the version
           BUILD_NAME=${BUILD_NAME/#v/}
           S3_PREFIX="vtally-${BUILD_NAME}"
-          ARTIFACT_FILENAME="vtally-${BUILD_NAME}.tgz"
-          aws s3 cp "${ARTIFACT_FILENAME}" "s3://${AWS_S3_NIGHTLY_BUCKET}/${S3_PREFIX}/${ARTIFACT_NAME}" --acl public-read
-          echo "::warning ::Artifact is available at ${AWS_S3_NIGHTLY_BASEURI}/${S3_PREFIX}/${ARTIFACT_FILENAME} for the next days."
-          echo "::set-output name=artifact::${AWS_S3_NIGHTLY_BASEURI}/${S3_PREFIX}/${ARTIFACT_FILENAME}"
-          echo "::set-output name=artifact_name::${ARTIFACT_FILENAME}"
-        working-directory: ${{ github.workspace }}/hub/dist
+          for ARTIFACT_FILENAME in *; do
+            aws s3 cp "${ARTIFACT_FILENAME}" "s3://${AWS_S3_NIGHTLY_BUCKET}/${S3_PREFIX}/${ARTIFACT_FILENAME}" --acl public-read
+            echo "::warning ::Artifact is available at ${AWS_S3_NIGHTLY_BASEURI}/${S3_PREFIX}/${ARTIFACT_FILENAME} for the next days."
+          done
+        working-directory: ${{ github.workspace }}/hub
