@@ -4,6 +4,7 @@
 
 use super::atem::AtemConnector;
 use super::config::{self, MixerSettings, MockConfig, TestConfig};
+use super::obs::ObsConnector;
 use super::vmix::VmixConnector;
 use crate::hub::Hub;
 use rand::Rng;
@@ -49,7 +50,8 @@ pub fn create(id: &str, hub: Arc<Hub>, settings: &MixerSettings) -> Option<Box<d
         }),
         config::ATEM => Box::new(AtemConnector::new(hub, settings.atem.clone())),
         config::VMIX => Box::new(VmixConnector::new(hub, settings.vmix.clone())),
-        config::OBS | config::ROLAND_V8HD | config::ROLAND_V60HD => {
+        config::OBS => Box::new(ObsConnector::new(hub, settings.obs.clone())),
+        config::ROLAND_V8HD | config::ROLAND_V60HD => {
             Box::new(UnsupportedConnector {
                 hub,
                 id: id.to_string(),

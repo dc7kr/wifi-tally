@@ -19,7 +19,8 @@ The result is a single ~7 MB executable without a Node.js runtime.
 | `null`, `mock` (development) and `test` mixers | done |
 | **vMix** connector (TCP API) | done |
 | **ATEM** connector (own implementation of the UDP protocol, see below) | done – **verified against the reference library and a simulated ATEM, not yet against real hardware** |
-| **OBS, Roland V-8HD / V-60HD connectors** | **not ported yet** – selecting one logs an error and tallies show the "unknown" state. Their settings are still stored and edited as usual. |
+| **OBS** connector (obs-websocket v4) | done – tested against a simulated OBS, not yet against a real one; no password support (as before) |
+| **Roland V-8HD / V-60HD connectors** | **not ported yet** – selecting one logs an error and tallies show the "unknown" state. Their settings are still stored and edited as usual. |
 | Tally flasher (NodeMCU programming from the hub) | removed from the hub – flash the firmware with PlatformIO |
 | Development proxy to the React dev server | not ported – use `--frontend-dir` with a built frontend |
 
@@ -82,6 +83,8 @@ Log verbosity can be tuned with `RUST_LOG`, e.g. `RUST_LOG=vtally_hub=debug`.
   A connector starts a task in `connect` (`TaskGuard` stops it when dropped).
 * `mixer/vmix.rs`: line/length framing of the TCP API (`Parser`), reconnects every second, polls the
   input names with `XML` every 5 seconds.
+* `mixer/obs.rs`: `ObsState` is the pure logic (scenes embedded into live scenes, live mode); the connector
+  speaks the obs-websocket v4 JSON protocol and asks for the scene list again whenever scenes change.
 * `mixer/atem/`: `packet.rs` is the UDP framing, `state.rs` the commands that matter for tallies
   plus the port of `listVisibleInputs` (keyers, transitions, super source, nested mix effects),
   `mod.rs` the session (hello, acknowledgements) and the reconnect logic. The hub only listens and
@@ -100,3 +103,5 @@ Log verbosity can be tuned with `RUST_LOG`, e.g. `RUST_LOG=vtally_hub=debug`.
   unreachable the connection error is logged once, not on every attempt.
 * ATEM: tallies are only published once the ATEM has sent its complete state, not while it is still being
   transferred. "Could not connect" and "Lost connection" are logged once per outage.
+* OBS: the streaming and recording state is also queried right after connecting (`GetStreamingStatus`), so the
+  live mode is right when OBS was already streaming. The TypeScript hub only learned it from later events.

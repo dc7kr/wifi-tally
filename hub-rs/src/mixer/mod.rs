@@ -2,6 +2,7 @@ pub mod atem;
 pub mod config;
 pub mod connectors;
 pub mod driver;
+pub mod obs;
 pub mod vmix;
 
 use config::*;
