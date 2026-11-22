@@ -2,9 +2,5 @@
 *~
 !.git*
 
-*.lc
-out/
-tally-settings.ini*
-!tally-settings.ini.example
-
-
+.pio/
+data/tally-settings.ini
