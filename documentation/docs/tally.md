@@ -19,7 +19,7 @@
 WS2812-compatible LED strips come with many names. Most common are `WS2812b` and `NeoPixel`. If you have
 anything that says it is compatible with either of those, it will probably work.
 
-Connect the strip to pin `D4`, the `+5V` and `GND` respectively.
+Connect the strip to pin `D4` (`GPIO4` on an ESP32), the `+5V` and `GND` respectively.
 
 ![connection of a WS2812 strip](images/tally-schematics-ws2812.png)
 

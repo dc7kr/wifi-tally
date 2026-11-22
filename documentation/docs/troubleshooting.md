@@ -8,14 +8,12 @@ The hints are usually ordered from most likely to least likely.
 If the LED strip started flashing blue before turning black, see [below](#the-led-strip-started-flashing-blue-for-a-while-but-then-turned-black).
 
 * Is the Tally really powered? Is your battery pack empty? Could the connector cable be broken?
-* Did you upload all files to the Tally?
+* Did you flash the firmware and upload the settings (`pio run -t upload` and `pio run -t uploadfs`)?
 * Is the LED strip correctly wired?
 * Is the LED strip working? Try to connect it to a 5V power source directly.
 * Are you using an LED strip with common cathode? Connect the common pin to `GND` and
   [do the necessary configuration](tally.md#using-leds-with-common-cathode).
-* Is the NodeMCU working? Try to connect to it via USB
-* In case you are developing the Tally Code: It is normal the strip stays black, because the
-  `init.lua` file is not uploaded.
+* Is the board working? Connect it via USB and run `pio device monitor` to see its log output.
 
 ## The LED strip started flashing blue for a while but then turned black
 
@@ -34,7 +32,9 @@ this during boot up for a few seconds, but it should not sustain for long.
 * Is your WiFi up? Is the signal strong enough near the tally?
 * Did you configure the WiFi name and its credentials correctly in `tally-settings.ini`?
 * Connect to the Tally via USB. It should log an error code why the connection failed.
-  The error codes are explained in the [NodeMCU documentation](https://nodemcu.readthedocs.io/en/master/modules/wifi/#wifieventmonreason).
+  The error codes are the IEEE 802.11 reason codes, e.g. `2` = authentication expired, `15` = 4-way handshake timeout (often a wrong password),
+  `201` = access point not found (see the [ESP8266](https://arduino-esp8266.readthedocs.io/en/latest/esp8266wifi/generic-class.html#onstationmodedisconnected)
+  and [ESP32](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/wifi.html#wi-fi-reason-code) documentation).
 
 ## The Tally blinks blue quickly for an extended amount of time
 
@@ -65,7 +65,7 @@ This very likely points to an issue with your WiFi configuration.
 
 **This happens when the `tally-settings.ini` file does not exist or is invalid.**
 
-* Did you flash the `tally-settings.ini` on the Tally?
+* Did you upload the `tally-settings.ini` to the Tally (`pio run -t uploadfs`)?
 * Does the `tally-settings.ini` include all mandatory settings?
 * Try configuring "wrong" settings that won't work. But this way, you should get a different error and rule out
   that keys where mistyped.

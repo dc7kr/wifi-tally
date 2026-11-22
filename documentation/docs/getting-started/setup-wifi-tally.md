@@ -15,9 +15,10 @@ beginner friendly.
 
 You need a few parts to build the WiFi Tally.
 
-### a NodeMcu ESP8266
-  
-This is an ESP8266 wifi chip on a development board that is typically used for IoT
+### an ESP8266 or ESP32 development board
+
+This guide uses a NodeMCU ESP8266 board, but an ESP32 development board works as well (see
+[ESP32 pins](#using-an-esp32) below). It is a wifi chip on a development board that is typically used for IoT
 applications. As it is an Open Hardware project there are lots of different boards
 available. They mostly differ in price and form factor and are all fit for the project.
 But they all look similar to this:
@@ -27,7 +28,6 @@ But they all look similar to this:
 ["NodeMCU Amica"](https://commons.wikimedia.org/wiki/File:Nodemcu_amica_bot_02.png) 
 by "Make Magazin DE", [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)
 
-!TODO: elaborate on different NodeMCUs!
   
 ### a piece of RGB LED strip
   
@@ -46,7 +46,7 @@ The whole setup draws far less than `200mA` and can be powered via USB.
 
 ## Connect the hardware
 
-All you need to do is connecting the LED strip to the NodeMCU board.
+All you need to do is connecting the LED strip to the board.
 
 !!! warning
     Do not connect more than 5 LEDs to the board!
@@ -63,7 +63,7 @@ All you need to do is connecting the LED strip to the NodeMCU board.
 | 3V3 | + or +5V |
 
 !!! info
-    It is possible to connect the `+5V` pin of the LED strip to `Vin` on the board. But not all NodeMCU boards connect
+    It is possible to connect the `+5V` pin of the LED strip to `Vin` on the board. But not all boards connect
     the PIN to the USB power supply and your LEDs would stay dark.
     
     It might also happen that you LED Strip does not work with a lower voltage of the 3.3V output. Typically this does
@@ -90,44 +90,35 @@ Then connect a second strip and let it face to the front of the camera.
 
 This light will only show preview and live states, but not any error states.
  
-## Prepare the NodeMCU Toolchain
+### Using an ESP32
 
-The NodeMCU documentation very nicely explains all the steps necessary to [start a NodeMCU project](https://nodemcu.readthedocs.io/en/master/getting-started/#getting-started-aka-nodemcu-quick-start).
-The documentation might seem overwhelming at first, but you only need to care of the two steps
+The ESP32 uses other pins than the NodeMCU ESP8266. Use the `GPIO` numbers printed on your board:
 
-* Flash Firmware, and
-* Upload code
+| light | R | G | B |
+| --- | --- | --- | --- |
+| operator light | `GPIO17` | `GPIO16` | `GPIO18` |
+| stage light | `GPIO21` | `GPIO19` | `GPIO22` |
 
-Depending on your Operating System, you should select one – and only one – [tool for each of these steps from
-the table](https://nodemcu.readthedocs.io/en/master/getting-started/#task-os-selector).
+A WS2812 strip is connected to `GPIO4` (instead of `D4`). If your wiring requires other pins,
+you can change them in `tally/src/Board.h` before building the firmware.
 
-So either select [NodeMCU PyFlasher](https://nodemcu.readthedocs.io/en/master/getting-started/#nodemcu-pyflasher)
-or [esptool.py](https://nodemcu.readthedocs.io/en/master/getting-started/#esptoolpy) to flash the firmware
-and follow their installation instruction. Similarly select [ESPlorer](https://nodemcu.readthedocs.io/en/master/getting-started/#esplorer)
-or [NodeMCU Tool](https://nodemcu.readthedocs.io/en/master/getting-started/#nodemcu-tool) to upload code and follow
-their installation instruction.
+## Prepare the toolchain
 
-Download [vtally-{{ latest_version }}-esp8266.zip]({{ github_link }}/releases/download/{{ latest_version }}/vtally-{{ latest_version }}-esp8266.zip)
-for the latest files for the ESP8266.
+The Tally firmware is built and flashed with [PlatformIO](https://platformio.org). It takes care of
+downloading the compiler and all libraries.
 
-## Flash the firmware
+1. Install [PlatformIO Core](https://docs.platformio.org/en/latest/core/installation/index.html)
+   (or the PlatformIO extension for VS Code).
+2. Get the source code of the project, e.g. with `git clone {{ github_link }}.git`, and change into the `tally` directory.
 
-When everything is set up flash the firmware with the tool selected in the previous step.
+Connect the board to your computer with a USB cable.
 
-The firmware is the `.bin` file in [vtally-{{ latest_version }}-esp8266.zip]({{ github_link }}/releases/download/{{ latest_version }}/vtally-{{ latest_version }}-esp8266.zip).
+## Configure the Tally
 
-## Upload Code
-
-Use the tool you have selected to upload the following files from
-[vtally-{{ latest_version }}-esp8266.zip]({{ github_link }}/releases/download/{{ latest_version }}/vtally-{{ latest_version }}-esp8266.zip)
-to the NodeMCU board:
-
-* every file ending in `.lc`
-* `init.lua`
-* the `tally-settings.ini` described below
+Copy `data/tally-settings.ini.example` to `data/tally-settings.ini` and edit it as needed.
 
 !!! info "tally-settings.ini"
-    This file configures your Tally. You can copy `tally-settings.ini.example` over and edit it as needed.
+    This file configures your Tally.
 
     | setting name | description | 
     | --- | --- |
@@ -138,11 +129,29 @@ to the NodeMCU board:
 
     For a list for all configuration values see [tally-settings.ini Reference](../tally.md).
 
-Reboot the NodeMCU board by pressing the `RST` button on the board or disconnecting it from power briefly.
+## Flash the firmware
+
+Run the following commands in the `tally` directory. Use `nodemcuv2` for an ESP8266 NodeMCU
+and `esp32dev` for an ESP32:
+
+````bash
+pio run -e nodemcuv2 -t upload      # flashes the firmware
+pio run -e nodemcuv2 -t uploadfs    # uploads data/tally-settings.ini
+````
+
+To see what the Tally is doing, you can watch its log output:
+
+````bash
+pio device monitor
+````
+
+When you change the `tally-settings.ini` later, you only need to run `uploadfs` again.
+
+Reboot the board by pressing the `RST` button on the board or disconnecting it from power briefly.
 
 !!! success
     If the LED strip starts blinking blue, this means you have correctly connected the hardware, flashed the firmware
-    and uploaded the code.
+    and uploaded the settings.
     
     After a few seconds it should show up in the Hub. Configure a channel there and the WiFi Tally should follow it.
     

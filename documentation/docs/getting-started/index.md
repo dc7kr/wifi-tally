@@ -3,7 +3,7 @@
 You need two parts to get the Tally Light operational: The Tally Lights themselves,
 and the **Hub** that connects your video mixer and the Tallies.
 
-For the Tally Lights you can either build a **WiFi Tally Light** based on NodeMCU
+For the Tally Lights you can either build a **WiFi Tally Light** based on an ESP8266 (NodeMCU) or ESP32
 or use a smartphone, tablet, etc to build a **Web Tally**. It is recommended to build
 a WiFi Tally Light, as its latency is lower, and they are easier to mount on cameras. But
 Web Tallies are a great way to get started with just a smartphone, and can be easily used
